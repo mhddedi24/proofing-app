@@ -124,8 +124,7 @@ export default function GalleryPage() {
     );
     window.open(`https://wa.me/${PHOTOGRAPHER_WA}?text=${text}`, '_blank');
   };
-const isExpired = session.expires_at && new Date(session.expires_at) < new Date();
-
+const isExpired = Boolean(session?.expires_at && new Date(session.expires_at) < new Date());
   if (isExpired) {
     return (
       <div className="min-h-screen bg-[#0d0d0e] flex flex-col items-center justify-center text-center p-6 text-stone-300">
