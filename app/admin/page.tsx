@@ -25,7 +25,8 @@ export default function AdminPage() {
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    // Jalankan pembersihan otomatis sesi kadaluarsa di background
+    document.title = "NOUZZY | Photographer Dashboard";
+
     fetch('/api/cleanup')
       .then((res) => res.json())
       .then((data) => {
@@ -53,20 +54,27 @@ export default function AdminPage() {
     if (!files || files.length === 0) return alert('Pilih foto JPEG preview terlebih dahulu!');
     setLoading(true);
 
-    
-
     try {
       setUploadProgress('Membuat data sesi...');
       const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
 
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 14);
+
       // 1. Simpan Sesi
       const { data: sessionData, error: sessionError } = await supabase
         .from('sessions')
-        .insert([{ client_name: clientName, slug: cleanSlug, photo_limit: photoLimit }])
+        .insert([
+          {
+            client_name: clientName,
+            slug: cleanSlug,
+            photo_limit: photoLimit,
+            expires_at: expiryDate.toISOString(),
+          },
+        ])
         .select()
         .single();
 
-        
       if (sessionError) throw sessionError;
 
       // 2. Upload file satu per satu ke storage
@@ -114,7 +122,6 @@ export default function AdminPage() {
       return alert('Belum ada foto yang dipilih oleh klien pada sesi ini.');
     }
 
-    // 1. Format list nama file untuk filter Lightroom
     const formatted = selectedPhotos
       .map((p: any) => p.file_name.replace(/\.[^/.]+$/, ''))
       .join(', ');
@@ -122,7 +129,6 @@ export default function AdminPage() {
     navigator.clipboard.writeText(formatted);
     setCopiedSlug(sessionSlug);
 
-    // 2. Cek apakah ada catatan khusus dari klien
     const photosWithNotes = selectedPhotos.filter((p: any) => p.notes && p.notes.trim() !== '');
     if (photosWithNotes.length > 0) {
       const notesSummary = photosWithNotes
@@ -268,10 +274,11 @@ export default function AdminPage() {
               sessions.map((s) => {
                 const totalPhotos = s.photos?.length || 0;
                 const selectedCount = s.photos?.filter((p: any) => p.is_selected).length || 0;
-const isExpired = s.expires_at && new Date(s.expires_at) < new Date();
-const daysLeft = s.expires_at
-  ? Math.max(0, Math.ceil((new Date(s.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
-  : 14;
+                const isExpired = s.expires_at && new Date(s.expires_at) < new Date();
+                const daysLeft = s.expires_at
+                  ? Math.max(0, Math.ceil((new Date(s.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+                  : 14;
+
                 return (
                   <div
                     key={s.id}
@@ -298,6 +305,10 @@ const daysLeft = s.expires_at
                         <span>•</span>
                         <span>
                           Pilihan: <strong className="text-amber-400">{selectedCount}</strong> / {s.photo_limit} kuota
+                        </span>
+                        <span>•</span>
+                        <span className={daysLeft <= 3 ? "text-rose-400 font-semibold" : "text-stone-400"}>
+                          Masa Aktif: {isExpired ? 'Kadaluarsa' : `${daysLeft} hari lagi`}
                         </span>
                       </div>
                     </div>
