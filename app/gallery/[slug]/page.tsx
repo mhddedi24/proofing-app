@@ -124,7 +124,28 @@ export default function GalleryPage() {
     );
     window.open(`https://wa.me/${PHOTOGRAPHER_WA}?text=${text}`, '_blank');
   };
-const isExpired = Boolean(session?.expires_at && new Date(session.expires_at) < new Date());
+// 1. Tampilkan loading jika data belum selesai diambil
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center text-stone-400 gap-3">
+        <div className="w-8 h-8 border-2 border-stone-600 border-t-amber-400 rounded-full animate-spin" />
+        <p className="text-xs uppercase tracking-widest font-mono">Memuat Galeri...</p>
+      </div>
+    );
+  }
+// TAMBAHKAN CONSOLE LOG INI UNTUK CEK 👇
+  console.log("DATA SESI:", session);
+  console.log("EXPIRES_AT:", session.expires_at);
+
+  const expiryDate = session.expires_at
+    ? new Date(session.expires_at)
+    : new Date(new Date(session.created_at).getTime() + 14 * 24 * 60 * 60 * 1000);
+
+  const isExpired = expiryDate < new Date();
+  console.log("EXPIRY DATE:", expiryDate);
+  console.log("WAKTU SEKARANG:", new Date());
+  console.log("APAKAH EXPIRED?:", isExpired);
+
   if (isExpired) {
     return (
       <div className="min-h-screen bg-[#0d0d0e] flex flex-col items-center justify-center text-center p-6 text-stone-300">
@@ -133,7 +154,7 @@ const isExpired = Boolean(session?.expires_at && new Date(session.expires_at) < 
         </div>
         <h1 className="text-2xl font-serif text-stone-100 mb-2">Masa Pemilihan Telah Berakhir</h1>
         <p className="text-sm text-stone-400 max-w-md mb-6 leading-relaxed">
-          Sesi pemilihan foto untuk <strong className="text-stone-200">{session.client_name}</strong> telah melewati batas waktu 14 hari dan galeri telah diarsipkan secara otomatis.
+          Sesi pemilihan foto untuk <strong className="text-stone-200">{session.client_name}</strong> telah melewati batas waktu dan galeri telah dinonaktifkan.
         </p>
         <a
           href={`https://wa.me/${PHOTOGRAPHER_WA}?text=Halo%20kak%2C%20apakah%20sesi%20foto%20saya%20masih%20bisa%20diaktifkan%20kembali%3F`}
@@ -146,15 +167,6 @@ const isExpired = Boolean(session?.expires_at && new Date(session.expires_at) < 
       </div>
     );
   }
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center text-stone-400 gap-3">
-        <div className="w-8 h-8 border-2 border-stone-600 border-t-amber-400 rounded-full animate-spin" />
-        <p className="text-xs uppercase tracking-widest font-mono">Memuat Galeri...</p>
-      </div>
-    );
-  }
-
   const displayedPhotos =
     viewFilter === 'selected' ? photos.filter((p) => selectedIds.has(p.id)) : photos;
 
