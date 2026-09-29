@@ -25,7 +25,16 @@ export default function AdminPage() {
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSessions();
+    // Jalankan pembersihan otomatis sesi kadaluarsa di background
+    fetch('/api/cleanup')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.deletedCount > 0) {
+          console.log(`${data.deletedCount} sesi kadaluarsa berhasil dibersihkan otomatis.`);
+        }
+      })
+      .catch((err) => console.error('Cleanup error:', err))
+      .finally(() => fetchSessions());
   }, []);
 
   const fetchSessions = async () => {
@@ -44,6 +53,8 @@ export default function AdminPage() {
     if (!files || files.length === 0) return alert('Pilih foto JPEG preview terlebih dahulu!');
     setLoading(true);
 
+    
+
     try {
       setUploadProgress('Membuat data sesi...');
       const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
@@ -55,6 +66,7 @@ export default function AdminPage() {
         .select()
         .single();
 
+        
       if (sessionError) throw sessionError;
 
       // 2. Upload file satu per satu ke storage
@@ -256,7 +268,10 @@ export default function AdminPage() {
               sessions.map((s) => {
                 const totalPhotos = s.photos?.length || 0;
                 const selectedCount = s.photos?.filter((p: any) => p.is_selected).length || 0;
-
+const isExpired = s.expires_at && new Date(s.expires_at) < new Date();
+const daysLeft = s.expires_at
+  ? Math.max(0, Math.ceil((new Date(s.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+  : 14;
                 return (
                   <div
                     key={s.id}

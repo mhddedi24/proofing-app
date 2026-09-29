@@ -14,6 +14,7 @@ import {
   Filter,
   MessageSquareQuote,
   Send,
+  Clock,
 } from 'lucide-react';
 
 export default function GalleryPage() {
@@ -44,6 +45,7 @@ export default function GalleryPage() {
       setSession(sessionData);
       setSubmitted(sessionData.is_submitted);
 
+      
       const { data: photoData } = await supabase
         .from('photos')
         .select('*')
@@ -122,7 +124,29 @@ export default function GalleryPage() {
     );
     window.open(`https://wa.me/${PHOTOGRAPHER_WA}?text=${text}`, '_blank');
   };
+const isExpired = session.expires_at && new Date(session.expires_at) < new Date();
 
+  if (isExpired) {
+    return (
+      <div className="min-h-screen bg-[#0d0d0e] flex flex-col items-center justify-center text-center p-6 text-stone-300">
+        <div className="w-16 h-16 rounded-full bg-stone-900 border border-stone-800 flex items-center justify-center mb-4 text-amber-400">
+          <Clock size={28} />
+        </div>
+        <h1 className="text-2xl font-serif text-stone-100 mb-2">Masa Pemilihan Telah Berakhir</h1>
+        <p className="text-sm text-stone-400 max-w-md mb-6 leading-relaxed">
+          Sesi pemilihan foto untuk <strong className="text-stone-200">{session.client_name}</strong> telah melewati batas waktu 14 hari dan galeri telah diarsipkan secara otomatis.
+        </p>
+        <a
+          href={`https://wa.me/${PHOTOGRAPHER_WA}?text=Halo%20kak%2C%20apakah%20sesi%20foto%20saya%20masih%20bisa%20diaktifkan%20kembali%3F`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs px-4 py-2.5 rounded-xl border border-stone-700 transition"
+        >
+          Hubungi Fotografer
+        </a>
+      </div>
+    );
+  }
   if (!session) {
     return (
       <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center text-stone-400 gap-3">
