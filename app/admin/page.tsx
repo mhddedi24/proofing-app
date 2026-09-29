@@ -130,7 +130,7 @@ export default function AdminPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-stone-800 bg-stone-900/80 text-stone-400 text-xs tracking-widest uppercase font-mono mb-2">
               <Sparkles size={12} className="text-amber-400" />
-              Proofing Studio Studio
+              NOUZZY VISUAL STUDIO
             </div>
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-stone-100">
               Fotografer Dashboard
