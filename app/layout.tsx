@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "NOUZZY | Client Photo Proofing",
-  description: "Official Client Photo Proofing & Selection Portal",
+  title: {
+    default: "NOUZZY | Client Photo Proofing",
+    template: "%s | NOUZZY",
+  },
+  description: "Official Client Photo Proofing & Selection Portal by Nouzzzy",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
